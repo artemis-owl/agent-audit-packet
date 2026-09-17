@@ -1,0 +1,77 @@
+{
+  "type": "record",
+  "name": "DecisionTrace",
+  "namespace": "steering.decisionops",
+  "doc": "Policy decision + rationale for an attempted action, designed for end-to-end correlation and audit export.",
+  "fields": [
+    { "name": "schema_version", "type": "string", "doc": "Semantic version of this event schema." },
+    { "name": "event_id", "type": "string", "doc": "Unique id for this event (UUID recommended)." },
+    { "name": "event_time", "type": "string", "doc": "RFC3339 timestamp when the event was emitted." },
+
+    { "name": "correlation_id", "type": "string", "doc": "Stable business/workflow id used to stitch the full chain." },
+    { "name": "trace_id", "type": "string", "doc": "OpenTelemetry trace id." },
+    { "name": "span_id", "type": ["null", "string"], "default": null, "doc": "OpenTelemetry span id (optional)." },
+
+    {
+      "name": "subject",
+      "type": {
+        "type": "record",
+        "name": "Subject",
+        "fields": [
+          { "name": "type", "type": "string", "doc": "e.g., user, service, workload." },
+          { "name": "id", "type": "string", "doc": "Stable subject identifier." },
+          { "name": "attributes", "type": { "type": "map", "values": "string" }, "default": {} }
+        ]
+      }
+    },
+
+    {
+      "name": "request",
+      "type": {
+        "type": "record",
+        "name": "Request",
+        "fields": [
+          { "name": "action", "type": "string", "doc": "Requested action name." },
+          { "name": "resource", "type": "string", "doc": "Resource identifier or name." },
+          { "name": "environment", "type": "string", "doc": "e.g., dev, test, prod." },
+          { "name": "attributes", "type": { "type": "map", "values": "string" }, "default": {} }
+        ]
+      }
+    },
+
+    {
+      "name": "policy",
+      "type": {
+        "type": "record",
+        "name": "PolicyDecision",
+        "fields": [
+          { "name": "engine", "type": "string", "doc": "Policy engine identifier (e.g., opa)." },
+          { "name": "bundle_version", "type": ["null", "string"], "default": null },
+          { "name": "bundle_hash", "type": "string", "doc": "Content hash of the policy bundle evaluated." },
+          { "name": "decision", "type": "string", "doc": "allow|deny." },
+          {
+            "name": "rationale",
+            "type": {
+              "type": "array",
+              "items": {
+                "type": "record",
+                "name": "RationaleItem",
+                "fields": [
+                  { "name": "code", "type": "string" },
+                  { "name": "message", "type": "string" }
+                ]
+              }
+            },
+            "default": []
+          }
+        ]
+      }
+    },
+
+    { "name": "data_classification", "type": "string", "doc": "e.g., public, internal, confidential, restricted." },
+    { "name": "pii_flags", "type": { "type": "array", "items": "string" }, "default": [] },
+
+    { "name": "evidence_refs", "type": { "type": "array", "items": "string" }, "default": [], "doc": "Pointers to follow-on evidence (ids, URIs, etc.)." }
+  ]
+}
+

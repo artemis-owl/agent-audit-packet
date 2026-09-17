@@ -1,0 +1,34 @@
+{
+  "type": "record",
+  "name": "EvidenceEvent",
+  "namespace": "steering.decisionops",
+  "doc": "Execution evidence tied to a decision trace / correlation id.",
+  "fields": [
+    { "name": "schema_version", "type": "string" },
+    { "name": "event_id", "type": "string" },
+    { "name": "event_time", "type": "string" },
+
+    { "name": "correlation_id", "type": "string" },
+    { "name": "trace_id", "type": "string" },
+    { "name": "span_id", "type": ["null", "string"], "default": null },
+
+    { "name": "evidence_type", "type": "string", "doc": "e.g., action.executed, action.failed, side_effect.recorded." },
+    { "name": "action", "type": "string" },
+    { "name": "result", "type": "string", "doc": "ok|error|skipped." },
+    { "name": "details", "type": { "type": "map", "values": "string" }, "default": {} },
+
+    {
+      "name": "workload",
+      "type": {
+        "type": "record",
+        "name": "WorkloadIdentity",
+        "fields": [
+          { "name": "service_name", "type": "string" },
+          { "name": "version", "type": ["null", "string"], "default": null },
+          { "name": "image_digest", "type": ["null", "string"], "default": null }
+        ]
+      }
+    }
+  ]
+}
+
