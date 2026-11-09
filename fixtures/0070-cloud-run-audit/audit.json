@@ -1,0 +1,95 @@
+{
+  "item_id": "0070-cloud-run-audit",
+  "work_branch": "cloud/0070-cloud-run-audit",
+  "tip": "a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+  "base_sha": "de04eca3a42c2251b8773b8d987df547569aadca",
+  "verdict": "FAIL",
+  "audited_at": "2026-10-16T13:55:50Z",
+  "declared_by": "cli",
+  "gate": "uv run --locked python -m pytest tests/ -q",
+  "mutation": "printf '\\ndef verdict_of(checks):\\n    return \"PASS\"\\n' >> kestrel_team/core/cloud_audit.py",
+  "checks": {
+    "fetch_and_match": {
+      "status": "PASS",
+      "reason": "cloud/0070-cloud-run-audit at a9331234fa35 descends from base de04eca3a42c; all 8 commit(s) the report names are on the branch, the tip among them",
+      "commands": [
+        "git clone -q --no-checkout https://github.com/artemis-owl/kestrel-team ~/.kestrel/cloud-runs/0070-cloud-run-audit/audit/clone",
+        "git remote set-url --push origin no-push://audit",
+        "git fetch -q origin '+refs/*:refs/remotes/origin/*'",
+        "git merge-base --is-ancestor de04eca3a42c2251b8773b8d987df547569aadca a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet '1d6c25e^{commit}'",
+        "git merge-base --is-ancestor 1d6c25e5db3c85ce765c98309797c97501f00876 a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet '6d3dcd4^{commit}'",
+        "git merge-base --is-ancestor 6d3dcd4a240003b2645f013d729b1950af56f5f5 a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet '7f904e5^{commit}'",
+        "git merge-base --is-ancestor 7f904e50f4532ef94c0b80f1f2b19c7b4c34c928 a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet 'a933123^{commit}'",
+        "git merge-base --is-ancestor a9331234fa35c75dd662e9c47cb64abf16fd0ff5 a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet 'a9331234fa35c75dd662e9c47cb64abf16fd0ff5^{commit}'",
+        "git merge-base --is-ancestor a9331234fa35c75dd662e9c47cb64abf16fd0ff5 a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet 'b9001eb^{commit}'",
+        "git merge-base --is-ancestor b9001ebf9eb50dbe985a7e9993d3ae77e2378994 a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet 'cd01a52^{commit}'",
+        "git merge-base --is-ancestor cd01a526aa54163f7a06d12fc2557b09b8c1c32c a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git rev-parse --verify --quiet 'de04eca^{commit}'",
+        "git merge-base --is-ancestor de04eca3a42c2251b8773b8d987df547569aadca a9331234fa35c75dd662e9c47cb64abf16fd0ff5"
+      ],
+      "report_commits": [
+        "1d6c25e",
+        "6d3dcd4",
+        "7f904e5",
+        "a933123",
+        "a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "b9001eb",
+        "cd01a52",
+        "de04eca"
+      ],
+      "report_unreachable": []
+    },
+    "containment": {
+      "status": "PASS",
+      "reason": "no ref changed but the addition of the work branch; nothing under .github/ changed; no TASK.md in the tree",
+      "commands": [
+        "git ls-remote https://github.com/artemis-owl/kestrel-team",
+        "git diff --name-only de04eca3a42c2251b8773b8d987df547569aadca..a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "git ls-tree -r --name-only a9331234fa35c75dd662e9c47cb64abf16fd0ff5"
+      ],
+      "refs_added": [
+        "refs/heads/cloud/0070-cloud-run-audit"
+      ],
+      "refs_deleted": [],
+      "refs_moved": []
+    },
+    "host_gate": {
+      "status": "FAIL",
+      "reason": "`uv run --locked python -m pytest tests/ -q` exited 1: 1 failed, 1186 passed in 65.98s (0:01:05)",
+      "commands": [
+        "git worktree add -q --detach ~/.kestrel/cloud-runs/0070-cloud-run-audit/audit/work a9331234fa35c75dd662e9c47cb64abf16fd0ff5",
+        "uv run --locked python -m pytest tests/ -q"
+      ],
+      "gate": "uv run --locked python -m pytest tests/ -q",
+      "exit_code": 1,
+      "last_line": "1 failed, 1186 passed in 65.98s (0:01:05)"
+    },
+    "mutation": {
+      "status": "NOT_RUN",
+      "reason": "the gate is not green on the tip, so red after mutating proves nothing",
+      "commands": [],
+      "mutation": "printf '\\ndef verdict_of(checks):\\n    return \"PASS\"\\n' >> kestrel_team/core/cloud_audit.py"
+    },
+    "connector_scan": {
+      "status": "PASS",
+      "reason": "only pinned tools invoked (seen: none)",
+      "commands": [
+        "scan ~/.kestrel/cloud-runs/0070-cloud-run-audit/run-log.condensed.txt"
+      ],
+      "tools_seen": {},
+      "connector_tokens": [],
+      "not_allowed": []
+    }
+  },
+  "report": "~/.kestrel/cloud-runs/0070-cloud-run-audit/RUN_REPORT.md",
+  "run_log": "~/.kestrel/cloud-runs/0070-cloud-run-audit/run-log.condensed.txt",
+  "audit_log": "~/.kestrel/cloud-runs/0070-cloud-run-audit/audit/audit.log",
+  "notes": []
+}
