@@ -71,6 +71,29 @@ Point it at your own packet once you have one:
 ./verify.sh path/to/corr-<id>
 ```
 
+Each check prints one line: `ok`, `FAIL` with its reason, or `not evidenced by
+this export` with what is absent. Exit 0 when every check is ok, 1 when a check
+failed, 2 when none failed but the packet cannot evidence one.
+
+## Map a session into a packet
+
+If what you have is a cloud coding-agent session rather than a governed
+gateway, `map-session.sh` builds the packet from what you kept of it: the
+agent's final report, and the result of the audit you ran on its work.
+
+```bash
+./map-session.sh path/to/session-files path/to/out
+./verify.sh path/to/out/corr-<id>
+```
+
+It reads `audit.json` and `RUN_REPORT.md` (or `run_report.md`), and
+`prepared.json` when present, in the form the kestrel engine saves a Claude
+cloud session. It prints what it mapped and what such an export cannot
+evidence: a session audited after it pushed has no policy decision from before
+the action, no time per push and no image digest. `fixtures/` holds one real
+session; `./selftest.sh` maps it, verifies it and checks that broken packets
+are named failures.
+
 ## How the packet is produced
 
 ```mermaid
