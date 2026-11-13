@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs the mapper and the verifier over a real session kept in fixtures/ and
-# over three broken packets. Each case names the exit code and the line it
+# over broken packets. Each case names the exit code and the line it
 # expects; the first mismatch exits 1.
 # Usage: ./selftest.sh
 set -uo pipefail
@@ -33,6 +33,17 @@ sed -i.bak 's/"decision": "deny"/"decision": "allow"/' "$T/allowed/decision_trac
 expect 2 "not evidenced by this export: every evidence record closes the loop on an allowed decision: 5 of 5 evidence record(s) carry no details.policy_decision" \
   ./verify.sh "$T/allowed"
 echo "ok   evidence with no recorded decision is not evidenced, exit 2"
+
+for r in skipped error done; do
+  cp -R packet/corr-500bdcb7dacac332 "$T/$r"
+  sed -i.bak "s/\"result\":\"ok\"/\"result\":\"$r\"/" "$T/$r/evidence.jsonl" && rm "$T/$r/evidence.jsonl.bak"
+done
+expect 1 "FAIL no allowed decision is missing its evidence: allowed decisions whose only evidence records result 'skipped': ['corr-500bdcb7dacac332']" \
+  ./verify.sh "$T/skipped"
+expect 0 "ok   no allowed decision is missing its evidence; the action ran and its result is not 'ok' for: ['corr-500bdcb7dacac332']" \
+  ./verify.sh "$T/error"
+expect 1 "evidence.jsonl:1 records result 'done', not one of ok, error, skipped" ./verify.sh "$T/done"
+echo "ok   a skipped action is not evidence, an error is named, an unknown result is a FAIL"
 
 cp -R "$T/out/corr-f39865b445dc0115" "$T/broken"
 echo '{not json' >> "$T/broken/evidence.jsonl"

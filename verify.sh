@@ -14,6 +14,7 @@ import hashlib, json, pathlib, sys
 
 p = pathlib.Path(sys.argv[1])
 counts = {"FAIL": 0, "NE": 0}
+RESULTS = ("ok", "error", "skipped")  # schemas/evidence.avsc, field `result`
 
 
 def ok(text):
@@ -148,6 +149,8 @@ def check():
                 broken.append(f"{where} and its trace disagree on trace_id")
             if e.get("action") != at(t, "request", "action"):
                 broken.append(f"{where} records a different action than was decided")
+            if e.get("result") not in RESULTS:
+                broken.append(f"{where} records result {e.get('result')!r}, not one of ok, error, skipped")
             decided = at(t, "policy", "decision")
             recorded = at(e, "details", "policy_decision")
             if recorded is None:
@@ -173,11 +176,26 @@ def check():
     if not parsed:
         bad(what, "the record files did not parse")
     else:
-        seen = {e.get("correlation_id") for e in evidence}
-        orphans = [t.get("correlation_id") for t in traces
-                   if at(t, "policy", "decision") == "allow" and t.get("correlation_id") not in seen]
-        if orphans:
-            bad(what, f"allowed decisions with no evidence of execution: {orphans}")
+        # Evidence is a record that the action ran. A record whose result is
+        # `skipped` says it did not, so it is not evidence of execution; one
+        # whose result is `error` says it ran and failed, and the line says so.
+        results = {}
+        for e in evidence:
+            results.setdefault(e.get("correlation_id"), []).append(e.get("result"))
+        allowed = [t.get("correlation_id") for t in traces if at(t, "policy", "decision") == "allow"]
+        orphans = [c for c in allowed if c not in results]
+        skipped = [c for c in allowed if c in results and all(r == "skipped" for r in results[c])]
+        failed = [c for c in allowed if c in results and c not in skipped
+                  and not any(r == "ok" for r in results[c])]
+        if orphans or skipped:
+            why = []
+            if orphans:
+                why.append(f"allowed decisions with no evidence of execution: {orphans}")
+            if skipped:
+                why.append(f"allowed decisions whose only evidence records result 'skipped': {skipped}")
+            bad(what, "; ".join(why))
+        elif failed:
+            ok(f"{what}; the action ran and its result is not 'ok' for: {failed}")
         else:
             ok(what)
 
