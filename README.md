@@ -61,8 +61,10 @@ packet/corr-500bdcb7dacac332/
 The script checks that the schema files match their recorded hashes, that both
 record files parse, that every trace cites the policy bundle shipped in the
 packet, that every evidence record closes the loop on an allowed decision with
-matching ids and action, that no allowed decision is missing its evidence, and
-that the observability pointer matches the trace. CI runs the same script on
+matching ids and action and a result the schema knows, that no allowed
+decision is missing its evidence (a record whose result is `skipped` is not
+evidence that the action ran, and one whose result is `error` is named on the
+line), and that the observability pointer matches the trace. CI runs the same script on
 every push.
 
 Point it at your own packet once you have one:
