@@ -23,7 +23,7 @@ packet/corr-500bdcb7dacac332/
 ├── observability/
 │   └── pointers.json            correlation, trace, and span ids into the tracing backend
 └── supplychain/
-    ├── cosign.pub               key the gateway and worker images were signed with
+    ├── cosign.pub               a cosign public key; the packet carries no signature
     └── sbom_out/                SPDX bills of materials for both services
 ```
 
@@ -50,7 +50,11 @@ packet/corr-500bdcb7dacac332/
    Jaeger; yours would point at wherever your traces live.
 6. **`supplychain/`** answers the last question an auditor asks: how do you
    know the binaries that produced this evidence were the binaries you think?
-   The public signing key and the SBOMs for both services are the answer.
+   The packet carries a public key and an SBOM for each service. It carries no
+   signature or attestation, and `verify.sh` checks nothing here, so this
+   folder shows where the answer would go and does not give it.
+   The folder's own `README.md` is as the export step wrote it and claims
+   more than that; it is left as exported.
 
 ## Verify it
 
@@ -116,7 +120,7 @@ travels over a stream to the worker, which performs the action and appends an
 evidence record bound to the same correlation id. Traces and evidence carry
 W3C trace context, so the run is visible end to end in the tracing backend.
 An export step gathers the trace, the evidence, the policy bundle, the schemas,
-the observability pointers, and the supply-chain attestations for one
+the observability pointers, and the supply-chain files for one
 correlation id into the packet you are looking at.
 
 The architecture this comes from is described at
