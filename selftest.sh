@@ -45,6 +45,19 @@ expect 0 "ok   no allowed decision is missing its evidence; the action ran and i
 expect 1 "evidence.jsonl:1 records result 'done', not one of ok, error, skipped" ./verify.sh "$T/done"
 echo "ok   a skipped action is not evidence, an error is named, an unknown result is a FAIL"
 
+expect 1 "not evidenced by this export: every trace cites the shipped policy bundle: the packet ships no policy file to hash the cited bundle against" \
+  ./verify.sh "$T/out/corr-f39865b445dc0115"
+for c in rego shape pointer sums; do cp -R packet/corr-500bdcb7dacac332 "$T/$c"; done
+echo 'allow if { true }' >> "$T/rego/policy/decision.rego"
+expect 1 "FAIL every trace cites the shipped policy bundle: policy/decision.rego does not hash to the cited bundle_hash" ./verify.sh "$T/rego"
+sed -i.bak 's/"workload":{[^}]*}/"workload":"worker"/' "$T/shape/evidence.jsonl" && rm "$T/shape/evidence.jsonl.bak"
+expect 1 "evidence.jsonl:1 does not match evidence.avsc: workload is not an object" ./verify.sh "$T/shape"
+sed -i.bak 's/"correlation_id": "corr-500bdcb7dacac332"/"correlation_id": "corr-other"/' "$T/pointer/observability/pointers.json" && rm "$T/pointer/observability/pointers.json.bak"
+expect 1 "FAIL observability pointer matches the trace: the pointer's correlation_id is not the trace's" ./verify.sh "$T/pointer"
+sed -i.bak '/evidence.avsc/d' "$T/sums/schemas/SHA256SUMS" && rm "$T/sums/schemas/SHA256SUMS.bak"
+expect 1 "FAIL schemas match SHA256SUMS: evidence.avsc is not listed" ./verify.sh "$T/sums"
+echo "ok   a changed policy file, a record off its schema, a pointer to another run and an unlisted schema are each a named FAIL"
+
 cp -R "$T/out/corr-f39865b445dc0115" "$T/broken"
 echo '{not json' >> "$T/broken/evidence.jsonl"
 expect 1 "evidence.jsonl:6 is not JSON" ./verify.sh "$T/broken"
