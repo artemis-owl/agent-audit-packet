@@ -23,6 +23,7 @@ packet/corr-500bdcb7dacac332/
 ├── observability/
 │   └── pointers.json            correlation, trace, and span ids into the tracing backend
 └── supplychain/
+    ├── README.md                the export step's own note; it claims more than the folder holds
     ├── cosign.pub               a cosign public key; the packet carries no signature
     └── sbom_out/                SPDX bills of materials for both services
 ```
@@ -36,15 +37,17 @@ packet/corr-500bdcb7dacac332/
    the exact policy bundle by hash.
 2. **`policy/decision.rego`** is the rule that produced that answer. Default
    deny. Dev deploys need passing tests; prod deploys need an explicit human
-   approval. `metadata.json` carries the bundle hash the trace cites, so you
-   can check that the policy shipped here is the policy that decided.
+   approval. `metadata.json` carries the bundle hash the trace cites, and the
+   verifier hashes the policy file against it, so the policy shipped here is
+   the policy the trace names. The hash covers that one file.
 3. **`evidence.jsonl`** closes the loop. The worker records that the allowed
    action executed, with the same correlation and trace ids, the same action,
    and the decision it was acting under. A decision with no evidence is an
    action that may never have happened; evidence with no decision is an action
    nobody authorized.
-4. **`schemas/`** are the contracts for the two record types. Versioned,
-   hash-summed, and deliberately minimal. Steal them.
+4. **`schemas/`** are the contracts for the two record types. Hash-summed
+   and deliberately minimal; each record carries the `schema_version` it was
+   written under. Steal them.
 5. **`observability/pointers.json`** is how an operator drops from the packet
    into the tracing backend for the same run. The sample points at a local
    Jaeger; yours would point at wherever your traces live.
@@ -62,14 +65,18 @@ packet/corr-500bdcb7dacac332/
 ./verify.sh
 ```
 
-The script checks that the schema files match their recorded hashes, that both
-record files parse, that every trace cites the policy bundle shipped in the
-packet, that every evidence record closes the loop on an allowed decision with
-matching ids and action and a result the schema knows, that no allowed
-decision is missing its evidence (a record whose result is `skipped` is not
-evidence that the action ran, and one whose result is `error` is named on the
-line), and that the observability pointer matches the trace. CI runs the same script on
-every push.
+The script checks that every schema file is listed in `SHA256SUMS` and matches
+its recorded hash, that both record files parse and every record matches its
+shipped schema, that every trace cites the policy bundle shipped in the packet
+and the shipped policy file hashes to it, that every evidence record closes
+the loop on an allowed decision with matching correlation id, trace id and
+action and a result the schema knows, that no allowed decision is missing its
+evidence (a record whose result is `skipped` is not evidence that the action
+ran, and one whose result is `error` is named on the line), and that the
+observability pointer names the trace's correlation, trace and span ids. A
+packet that ships no policy file gets `not evidenced` on the policy line, not
+`ok`. The script checks no signature: a packet is as trustworthy as where you
+got it. It needs `bash` and `python3`. CI runs the same script on every push.
 
 Point it at your own packet once you have one:
 
@@ -93,7 +100,7 @@ agent's final report, and the result of the audit you ran on its work.
 ```
 
 It reads `audit.json` and `RUN_REPORT.md` (or `run_report.md`), and
-`prepared.json` when present, in the form the kestrel engine saves a Claude
+`prepared.json` and the run log when present, in the form the kestrel engine saves a Claude
 cloud session. It prints what it mapped and what such an export cannot
 evidence: a session audited after it pushed has no policy decision from before
 the action, no time per push and no image digest. `fixtures/` holds one real
